@@ -1,10 +1,16 @@
 use anyhow::Result;
 mod helpers;
 use helpers::parse_file;
-fn main() -> Result<()>{
+
+fn process_file() -> Result<Vec<Vec<char>>> {
     let lines = parse_file("input")?
         .map(|line| line.chars().collect::<Vec<char>>())
         .collect::<Vec<Vec<char>>>();
+    Ok(lines)
+}
+
+fn main() -> Result<()>{
+    let lines = process_file()?;
     
     let mut temp_vec: Vec<char> = Vec::new();
     let columns = lines[0].len();
@@ -15,19 +21,20 @@ fn main() -> Result<()>{
     // iterate over each column
     for col in 0..columns {
         // iterate over each row
-        for row in 0..rows {
-            temp_vec.push(lines[row][col]);
+        for line in lines.iter() {
+            temp_vec.push(line[col]);
         }
     }
 
     let mut gamma: Vec<char> = Vec::new();
     let mut epsilon: Vec<char> = Vec::new();
-
+    let half = rows / 2;
+    
     // transpose initial vector
     for window in temp_vec.windows(rows).step_by(rows) {
-        let count_ones = window.iter().filter(|&c| *c == '1').count();
-        let count_zeros = rows - count_ones;
-        if count_ones > count_zeros {
+        // majority element if present more than half of the elements
+        let most_common = window.iter().filter(|&c| *c == '1').count() > half;
+        if most_common {
             gamma.push('1');
             epsilon.push('0');
         } else {
